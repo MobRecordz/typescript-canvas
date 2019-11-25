@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins&display=swap');
+
+#app {
+  font-family: 'Poppins', sans-serif;
+  background-color: rgba(43, 43, 43, 1);
+  color: rgb(241, 241, 241);
+  padding: 20px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+#canvas {
+  background-color: rgb(68, 68, 68)
+}
