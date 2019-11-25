@@ -42,7 +42,7 @@ const canvasApi = new CanvasApi(canvasElement)
 canvasApi.sendMessageToDisplay('This is a display')
 
 // SNAKE
-const speed = 100
+const speed = 50
 
 const snakeHead: Coords2d = { x: 10, y: 10, size: 2 }
 const snake: Coords2d[] = [snakeHead]
@@ -57,8 +57,6 @@ for (let i = 0; i < 20; i++) {
   snake.push(item)
 }
 
-// console.log(snake)wds
-
 const render = setInterval(snakeRender, speed)
 
 function snakeRender() {
@@ -72,12 +70,10 @@ function snakeRender() {
   } catch(e) {
     clearInterval(render)
   }
-  
 }
 
 function snakeMove() {
   const { width, height } = canvasApi.el
-  let lastX, lastY
 
   snake.forEach((item, index) => {
     
@@ -106,7 +102,6 @@ function snakeMove() {
       snake.unshift(head)
 
       canvasApi.draw(snake)
-
   })
 }
 
