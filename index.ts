@@ -3,7 +3,8 @@ import './style.css';
 
 export interface Coords2d {
   x: number,
-  y: number
+  y: number,
+  size: number
 }
 
 class CanvasApi {
@@ -14,25 +15,11 @@ class CanvasApi {
 
     if (el.getContext)
       this.context = el.getContext('2d');
-  }
+  } 
 
   public draw(coords: Coords2d[]) {
     const ctx: CanvasRenderingContext2D = this.context
-
-    ctx.beginPath()
-    ctx.moveTo(coords[0].x, coords[0].y)
-    ctx.lineWidth = 10
-
-    coords.forEach((coord, index) => {
-      if (index !== 0) {
-        ctx.lineTo(coord.x, coord.y)
-      } else if (index === coords.length - 1) {
-        ctx.closePath()
-      }
-    })
-    
-    ctx.stroke()
-    
+    coords.map(coord => ctx.fillRect(coord.x, coord.y, coord.size, coord.size))
   }
 
   public clearCanvas() {
@@ -55,50 +42,84 @@ const canvasApi = new CanvasApi(canvasElement)
 canvasApi.sendMessageToDisplay('This is a display')
 
 // SNAKE
-const fps = 1000 / 60
+const speed = 100
 
-interface SnakeBlock {
-  x: number,
-  y: number
-}
-
-const snakeHead: Coords2d = { x: 10, y: 10 }
+const snakeHead: Coords2d = { x: 10, y: 10, size: 2 }
 const snake: Coords2d[] = [snakeHead]
 
 let direction: number = 0 // 0 - up, 1 - right, 2 - down, 3 - left
+let nextDirection: number = 0
 
 // Starter snake body
-const item: Coords2d = {
-  x: 11, y: 10
+for (let i = 0; i < 20; i++) {
+  const item = { ...snake[snake.length - 1] }
+  item.x += item.size
+  snake.push(item)
 }
-snake.push({ ...item })
-item.x = 12
-snake.push({ ...item })
 
-// const render = setInterval(snakeRender, fps)
+// console.log(snake)wds
+
+const render = setInterval(snakeRender, speed)
 
 function snakeRender() {
-  canvasApi.clearCanvas()
-  snakeMove()
-  canvasApi.draw(snake)
+  try {
+    window.requestAnimationFrame(() => {
+      canvasApi.clearCanvas()
+      snakeMove()
+    })
 
-  // canvasApi.sendMessageToDisplay(`${JSON.stringify(snakeTail)}`)
+    // canvasApi.sendMessageToDisplay(`${JSON.stringify(snakeTail)}`)
+  } catch(e) {
+    clearInterval(render)
+  }
+  
 }
 
 function snakeMove() {
   const { width, height } = canvasApi.el
+  let lastX, lastY
 
-  for (const item of snake) {
+  snake.forEach((item, index) => {
+    
+      // canvasApi.sendMessageToDisplay(index + "")
 
-    switch(direction) {
-      case 0: item.y--; break;
-      case 1: item.x--; break;
-      case 2: item.y++; break;
-      case 3: item.x--; break;
-    }
+      let { x, y, size } = snake[0]
+      direction = nextDirection
+      
+      switch(direction) {
+        case 0: if (y < 0) y = height
+                else y--; 
+                break;
+        case 1: if (x > width) x = 0
+                else x++; 
+                break;
+        case 2: if (y > height) y = 0
+                else y++; 
+                break;
+        case 3: if (x < 0) x = width
+                else x--; 
+                break;
+      }
 
-  }
+      snake.pop()
+      const head: Coords2d = { x, y, size: 5 }
+      snake.unshift(head)
+
+      canvasApi.draw(snake)
+
+  })
 }
+
+document.addEventListener('keydown', (event: KeyboardEvent) => {
+  canvasApi.sendMessageToDisplay(`KEY: ${event.key}, DIRECTION: ${direction}`)
+
+  switch(event.key) {
+    case 'w': nextDirection = 0; break;
+    case 'd': nextDirection = 1; break;
+    case 's': nextDirection = 2; break;
+    case 'a': nextDirection = 3; break;
+  }
+})
 
 // --------------------
 // TO DRAW WITH A MOUSE 
